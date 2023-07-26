@@ -23,6 +23,7 @@ class _HomeState extends State<Home> {
     getToDo();
   }
 
+  // Function for creating a snackbar
   void showErroMessage(String message) {
     SnackBar(
       backgroundColor: Color.fromARGB(255, 255, 17, 0),
@@ -37,7 +38,7 @@ class _HomeState extends State<Home> {
 
   // Fetch data from the API
   Future<void> getToDo() async {
-    const url = 'https://api.nstack.in/v1/todos?page=1&limit=20';
+    const url = 'https://api.nstack.in/v1/todos?page=1&limit=10';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
 
@@ -89,7 +90,7 @@ class _HomeState extends State<Home> {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
-              final id = item['_id'];
+              final id = item['_id'] as String;
 
               return ListTile(
                 leading: CircleAvatar(
