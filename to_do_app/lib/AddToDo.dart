@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class AddToDo extends StatefulWidget {
-  const AddToDo({Key? key}) : super(key: key);
+  final Map? todo;
+  const AddToDo({
+    super.key,
+    this.todo,
+  });
 
   @override
   State<AddToDo> createState() => _AddToDoState();
@@ -16,8 +20,63 @@ class _AddToDoState extends State<AddToDo> {
   // Create text editing controllers for the title and description text fields
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  bool isEdit = false;
 
-  Future<void> submitToDo() async {
+  @override
+  void initState() {
+    super.initState();
+    final todo = widget.todo;
+    if (widget.todo != null) {
+      isEdit = true;
+      final title = todo!['title'];
+      final description = todo['description'];
+      titleController.text = title;
+      descriptionController.text = description;
+    }
+  }
+
+  void showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color.fromARGB(255, 255, 17, 0),
+        content: Center(
+          child: Text(
+            message,
+            style: const TextStyle(fontSize: 30),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> putToDo() async {
+    final todo = widget.todo;
+    if (todo == null) {
+      print('You can\'t call updated without todo data');
+      return;
+    }
+    final id = todo['_id'];
+    final title = titleController.text;
+    final description = descriptionController.text;
+    final body = {
+      "title": title,
+      "description": description,
+      "is_completed": false
+    };
+    final url = 'https://api.nstack.in/v1/todos/$id';
+    final uri = Uri.parse(url);
+    final response = await http.put(uri,
+        body: jsonEncode(body), headers: {'Content-Type': 'application/json'});
+    if (response.statusCode == 200) {
+      // Show a success message using a SnackBar with a custom style
+      showErrorMessage('👍🏻');
+    } else {
+      // If not successful, show a failure message using a SnackBar with a custom style
+      showErrorMessage('👎🏻');
+    }
+  }
+
+  Future<void> postToDo() async {
     // Get the data from the form
     final title = titleController.text;
     final description = descriptionController.text;
@@ -71,7 +130,9 @@ class _AddToDoState extends State<AddToDo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notes'),
+        title: Text(
+          isEdit ? 'Edit ToDo' : 'Add ToDo',
+        ),
         centerTitle: false,
       ),
       body: GestureDetector(
@@ -111,8 +172,9 @@ class _AddToDoState extends State<AddToDo> {
       ),
       // FloatingActionButton to submit the form data
       floatingActionButton: FloatingActionButton(
-        onPressed: submitToDo,
-        child: const Icon(Icons.send_rounded),
+        onPressed: isEdit ? putToDo : postToDo,
+        child:
+            isEdit ? const Icon(Icons.update) : const Icon(Icons.send_rounded),
       ),
     );
   }

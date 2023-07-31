@@ -1,10 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'AddToDo.dart';
-import 'EditToDo.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -23,14 +22,30 @@ class _HomeState extends State<Home> {
     getToDo();
   }
 
+  Future<void> editToDo(Map item) async {
+    final route = MaterialPageRoute(builder: (context) => AddToDo(todo: item));
+    await Navigator.push(context, route);
+  }
+
+  Future<void> addToDo() async {
+    final route = MaterialPageRoute(builder: (context) => const AddToDo());
+    await Navigator.push(context, route);
+    setState(() {
+      isLoading = true;
+    });
+    getToDo();
+  }
+
   // Function for creating a snackbar
-  void showErroMessage(String message) {
-    SnackBar(
-      backgroundColor: Color.fromARGB(255, 255, 17, 0),
-      content: Center(
-        child: Text(
-          message,
-          style: TextStyle(fontSize: 30),
+  void showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color.fromARGB(255, 255, 17, 0),
+        content: Center(
+          child: Text(
+            message,
+            style: const TextStyle(fontSize: 30),
+          ),
         ),
       ),
     );
@@ -51,7 +66,7 @@ class _HomeState extends State<Home> {
       });
     } else {
       // Show error message if the request fails
-      showErroMessage('No internet connection');
+      showErrorMessage('No internet connection');
     }
     setState(() {
       isLoading = false;
@@ -59,7 +74,7 @@ class _HomeState extends State<Home> {
   }
 
   // Function to delete an item by ID
-  Future<void> deleteById(String id) async {
+  Future<void> deleteToDo(String id) async {
     final url = 'https://api.nstack.in/v1/todos/$id';
     final uri = Uri.parse(url);
     final response = await http.delete(uri);
@@ -71,7 +86,7 @@ class _HomeState extends State<Home> {
         items = filtered;
       });
     } else {
-      showErroMessage('Deletion failed');
+      showErrorMessage('Deletion failed');
     }
   }
 
@@ -89,7 +104,7 @@ class _HomeState extends State<Home> {
           child: ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
-              final item = items[index];
+              final item = items[index] as Map;
               final id = item['_id'] as String;
 
               return ListTile(
@@ -102,9 +117,7 @@ class _HomeState extends State<Home> {
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item['description'],
-                    ),
+                    Text(item['description']),
                     const Divider(),
                   ],
                 ),
@@ -112,14 +125,10 @@ class _HomeState extends State<Home> {
                   onSelected: (value) {
                     if (value == 'edit') {
                       // Handle edit action here
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const EditToDo()),
-                      );
+                      editToDo(item);
                     } else if (value == 'delete') {
                       // Handle delete action here
-                      deleteById(id);
+                      deleteToDo(id);
                     }
                   },
                   itemBuilder: (context) {
@@ -146,18 +155,7 @@ class _HomeState extends State<Home> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddToDo(),
-            ),
-          );
-          setState(() {
-            isLoading = true;
-          });
-          getToDo();
-        },
+        onPressed: addToDo,
         child: const Icon(Icons.add),
       ),
     );
