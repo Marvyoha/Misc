@@ -25,6 +25,10 @@ class _HomeState extends State<Home> {
   Future<void> editToDo(Map item) async {
     final route = MaterialPageRoute(builder: (context) => AddToDo(todo: item));
     await Navigator.push(context, route);
+    setState(() {
+      isLoading = true;
+    });
+    getToDo();
   }
 
   Future<void> addToDo() async {
@@ -101,51 +105,65 @@ class _HomeState extends State<Home> {
         replacement: RefreshIndicator(
           color: const Color.fromARGB(255, 255, 17, 0),
           onRefresh: getToDo,
-          child: ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index] as Map;
-              final id = item['_id'] as String;
+          child: Visibility(
+            visible: items.isNotEmpty,
+            replacement: Center(
+              child: Text(
+                'No ToDo item',
+                style: Theme.of(context).textTheme.displaySmall,
+              ),
+            ),
+            child: ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index] as Map;
+                final id = item['_id'] as String;
 
-              return ListTile(
-                leading: CircleAvatar(
-                  foregroundColor: Colors.black,
-                  backgroundColor: Colors.grey,
-                  child: Text('${index + 1}'),
-                ),
-                title: Text(item['title']),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item['description']),
-                    const Divider(),
-                  ],
-                ),
-                trailing: PopupMenuButton(
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      // Handle edit action here
-                      editToDo(item);
-                    } else if (value == 'delete') {
-                      // Handle delete action here
-                      deleteToDo(id);
-                    }
-                  },
-                  itemBuilder: (context) {
-                    return [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Text('Edit'),
+                return Padding(
+                  padding: const EdgeInsets.only(top: 15, left: 15, right: 15),
+                  child: Card(
+                    color: Color.fromARGB(255, 132, 65, 60),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Colors.grey,
+                        child: Text('${index + 1}'),
                       ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Text('Delete'),
+                      title: Text(item['title']),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item['description']),
+                        ],
                       ),
-                    ];
-                  },
-                ),
-              );
-            },
+                      trailing: PopupMenuButton(
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            // Handle edit action here
+                            editToDo(item);
+                          } else if (value == 'delete') {
+                            // Handle delete action here
+                            deleteToDo(id);
+                          }
+                        },
+                        itemBuilder: (context) {
+                          return [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Text('Edit'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Delete'),
+                            ),
+                          ];
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
         child: const Center(
