@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:to_do_app/utils/utilities.dart';
 
 class AddToDo extends StatefulWidget {
   final Map? todo;
@@ -35,20 +36,6 @@ class _AddToDoState extends State<AddToDo> {
     }
   }
 
-  void showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color.fromARGB(255, 255, 17, 0),
-        content: Center(
-          child: Text(
-            message,
-            style: const TextStyle(fontSize: 30),
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> putToDo() async {
     final todo = widget.todo;
     if (todo == null) {
@@ -69,10 +56,14 @@ class _AddToDoState extends State<AddToDo> {
         body: jsonEncode(body), headers: {'Content-Type': 'application/json'});
     if (response.statusCode == 200) {
       // Show a success message using a SnackBar with a custom style
-      showErrorMessage('👍🏻');
+      showErrorMessage(context, '👍🏻', Colors.green);
     } else {
       // If not successful, show a failure message using a SnackBar with a custom style
-      showErrorMessage('👎🏻');
+      showErrorMessage(
+        context,
+        '👎🏻',
+        const Color.fromARGB(255, 255, 17, 0),
+      );
     }
   }
 
@@ -99,29 +90,13 @@ class _AddToDoState extends State<AddToDo> {
       descriptionController.text = '';
 
       // Show a success message using a SnackBar with a custom style
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: Colors.green,
-          content: Center(
-            child: Text(
-              '👍🏻',
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-        ),
-      );
+      showErrorMessage(context, '👍🏻', Colors.green);
     } else {
       // If not successful, show a failure message using a SnackBar with a custom style
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: Color.fromARGB(255, 255, 17, 0),
-          content: Center(
-            child: Text(
-              '👎🏻',
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-        ),
+      showErrorMessage(
+        context,
+        '👎🏻',
+        const Color.fromARGB(255, 255, 17, 0),
       );
     }
   }

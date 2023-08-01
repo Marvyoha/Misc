@@ -1,7 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:to_do_app/utils/utilities.dart';
 
 import 'AddToDo.dart';
 
@@ -40,21 +43,6 @@ class _HomeState extends State<Home> {
     getToDo();
   }
 
-  // Function for creating a snackbar
-  void showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color.fromARGB(255, 255, 17, 0),
-        content: Center(
-          child: Text(
-            message,
-            style: const TextStyle(fontSize: 30),
-          ),
-        ),
-      ),
-    );
-  }
-
   // Fetch data from the API
   Future<void> getToDo() async {
     const url = 'https://api.nstack.in/v1/todos?page=1&limit=10';
@@ -70,7 +58,7 @@ class _HomeState extends State<Home> {
       });
     } else {
       // Show error message if the request fails
-      showErrorMessage('No internet connection');
+      showErrorMessage(context, 'No internet connection', Colors.green);
     }
     setState(() {
       isLoading = false;
@@ -90,7 +78,11 @@ class _HomeState extends State<Home> {
         items = filtered;
       });
     } else {
-      showErrorMessage('Deletion failed');
+      showErrorMessage(
+        context,
+        'Deletion failed',
+        const Color.fromARGB(255, 255, 17, 0),
+      );
     }
   }
 
